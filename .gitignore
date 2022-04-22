@@ -1,0 +1,13 @@
+node_modules
+dist
+results
+*.log
+.nyc_output
+*.tsbuildinfo
+.DS_Store
+.idea
+
+lerna-debug.log
+npm-debug.log
+yarn-error.log
+.env

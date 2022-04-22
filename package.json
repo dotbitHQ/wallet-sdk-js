@@ -1,0 +1,74 @@
+{
+  "name": "wallet-sdk-js",
+  "version": "0.0.1",
+  "description": "wallets sdk",
+  "keywords": [
+    "wallet",
+    "MetaMask",
+    "Torus",
+    "TronLink",
+    "UniSign",
+    "WalletConnect"
+  ],
+  "author": "dotbitHQ",
+  "homepage": "https://github.com/dotbitHQ/wallet-sdk-js",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "directories": {
+    "dist": "dist",
+    "test": "__tests__"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dotbitHQ/wallet-sdk-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dotbitHQ/wallet-sdk-js/issues"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "yarn clean && rollup -c",
+    "test": "jest",
+    "lint": "eslint \"{src,__tests__}/**/*.ts\" --fix --max-warnings 0"
+  },
+  "dependencies": {
+    "web3": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-ordered-imports": "^0.5.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.2",
+    "prettier": "^2.2.0",
+    "rimraf": "~3.0.2",
+    "rollup": "2.33.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "ts-jest": "^26.4.4",
+    "tslib": "^2.1.0",
+    "typescript": "^4.2.3"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "tag": "beta",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16.14.0",
+    "npm": ">=8.5.1"
+  }
+}
