@@ -1,76 +1,131 @@
 import Web3 from 'web3'
-import { chainIdHexToNumber } from './tools'
-import { IWalletsParams, ISendTrxParams } from './types'
-import { ChainId, WalletsName } from './const'
+import {chainIdHexToNumber} from './tools'
+import {IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams} from './types'
+import {
+  ChainId, ChainIdToChainInfoMap,
+  ChainIdToCoinTypeMap,
+  CoinType, ErrorCode,
+  TronLinkRequestAccountsResponseCode,
+  WalletProtocol
+} from './const'
 
 export class Wallets {
   provider: any
-  walletName: WalletsName
-  chainId: number | undefined
-  addresses: string[] = []
+  chainId: ChainId | undefined
+  address: string | undefined
+  coinType: CoinType | undefined
+  walletProtocol: WalletProtocol
 
   constructor ({
                  provider,
-                 walletName,
-                 chainId
+                 coinType,
+                 chainId,
+                 walletProtocol
                }: IWalletsParams) {
     this.provider = provider
-    this.walletName = walletName
     this.chainId = chainId
+    this.coinType = coinType
+    this.walletProtocol = walletProtocol
   }
 
-  async connect (): Promise<string[]>  {
-    let res: string[] = []
-    if (this.walletName === WalletsName.metaMask) {
+  async connect (): Promise<IConnectRes | undefined> {
+    let res = undefined
+    if (this.walletProtocol === WalletProtocol.metaMask) {
       res = await this.metaMaskConnect()
     }
-    else if (this.walletName === WalletsName.torus) {
+    else if (this.walletProtocol === WalletProtocol.torus) {
       res = await this.torusConnect()
     }
-    else if (this.walletName === WalletsName.tronLink) {
+    else if (this.walletProtocol === WalletProtocol.tronLink) {
       res = await this.tronLinkConnect()
     }
-    this.addresses = res
     return res
   }
 
   async signData (data: string | object, isEIP712?: boolean): Promise<string> {
-    switch (this.walletName) {
-      case WalletsName.metaMask:
-        return await this.evmSignData(this.provider, data, isEIP712)
-      case WalletsName.torus:
-        return await this.evmSignData(this.provider.ethereum, data, isEIP712)
-      case WalletsName.tronLink:
-        return await this.tronLinkSign(data)
+    let res = ''
+    switch (this.walletProtocol) {
+      case WalletProtocol.metaMask:
+      case WalletProtocol.torus:
+        res = await this.evmSignData(data, isEIP712)
+        break
+      case WalletProtocol.tronLink:
+        res = await this.tronLinkSign(data)
+        break
     }
+    return res
   }
 
   async sendTrx (data: ISendTrxParams): Promise<string> {
     let txhash = ''
-    switch (this.walletName) {
-      case WalletsName.metaMask:
-        txhash = await this.evmSendTrx(this.provider, data)
+    switch (this.walletProtocol) {
+      case WalletProtocol.metaMask:
+      case WalletProtocol.torus:
+        txhash = await this.evmSendTrx(data)
         break
-      case WalletsName.torus:
-        txhash = await this.evmSendTrx(this.provider.ethereum, data)
-        break
-      case WalletsName.tronLink:
+      case WalletProtocol.tronLink:
         txhash = await this.tronLinkSendTrx(data)
         break
     }
     return txhash
   }
 
-  async metaMaskConnect (): Promise<string[]> {
+  async metaMaskConnect (): Promise<IConnectRes> {
     try {
-      const net_version = await this.provider.request({ method: 'net_version' })
-      const eth_chainId = await this.provider.request({ method: 'eth_chainId' })
-      const _chainId = chainIdHexToNumber(net_version || eth_chainId)
-      if (this.chainId && this.chainId !== _chainId) {
-        await this.metaMaskSwitchChain(this.chainId)
-      }
+      let net_version = await this.provider.request({ method: 'net_version' })
+      let eth_chainId = await this.provider.request({ method: 'eth_chainId' })
+      let _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
-      return res
+      this.address = res[0]
+      return {
+        coinType: ChainIdToCoinTypeMap[_chainId],
+        chainId: _chainId,
+        address: this.address
+      }
+    }
+    catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
+  async torusConnect (): Promise<IConnectRes> {
+    debugger
+    try {
+      let net_version = await this.provider.request({ method: 'net_version' })
+      let eth_chainId = await this.provider.request({ method: 'eth_chainId' })
+      let _chainId = chainIdHexToNumber(net_version || eth_chainId)
+      const res = await this.provider.request({ method: 'eth_requestAccounts' })
+      this.address = res[0]
+      return {
+        coinType: ChainIdToCoinTypeMap[_chainId],
+        chainId: _chainId,
+        address: this.address
+      }
+    }
+    catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
+  async tronLinkConnect (): Promise<IConnectRes> {
+    try {
+      const res: ITronLinkRequestAccountsResponse = await this.provider.request({
+        method: 'tron_requestAccounts'
+      })
+
+      if (res.code === TronLinkRequestAccountsResponseCode.ok) {
+        this.address = this.provider.defaultAddress.base58
+        return {
+          coinType: CoinType.trx,
+          chainId: undefined,
+          address: this.address
+        }
+      }
+      const error:any = new Error(res.message)
+      error.code = res.message
+      throw error
     }
     catch (err) {
       console.error(err)
@@ -79,70 +134,9 @@ export class Wallets {
   }
 
   async metaMaskSwitchChain (chainId: number) {
-    let info: any = {}
     const chainIdHex = Web3.utils.numberToHex(chainId)
-    switch (chainId) {
-      case ChainId.eth:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Ethereum Mainnet',
-          symbol: 'ETH',
-          decimals: 18,
-          rpcUrl: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-          blockExplorerUrl: 'https://etherscan.io'
-        }
-        break
-      case ChainId.ethGoerli:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Ethereum Goerli Testnet',
-          symbol: 'ETH',
-          decimals: 18,
-          rpcUrl: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-          blockExplorerUrl: 'https://goerli.etherscan.io'
-        }
-        break
-      case ChainId.bsc:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Binance Smart Chain Mainnet',
-          symbol: 'BNB',
-          decimals: 18,
-          rpcUrl: 'https://bsc-dataseed3.binance.org',
-          blockExplorerUrl: 'https://bscscan.com'
-        }
-        break
-      case ChainId.bscTestnet:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Binance Smart Chain Testnet',
-          symbol: 'BNB',
-          decimals: 18,
-          rpcUrl: 'https://data-seed-prebsc-1-s2.binance.org:8545',
-          blockExplorerUrl: 'https://testnet.bscscan.com'
-        }
-        break
-      case ChainId.polygon:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Polygon Mainnet',
-          symbol: 'MATIC',
-          decimals: 18,
-          rpcUrl: 'https://matic-mainnet-full-rpc.bwarelabs.com',
-          blockExplorerUrl: 'https://polygonscan.com'
-        }
-        break
-      case ChainId.polygonMumbai:
-        info = {
-          chainId: chainIdHex,
-          networkName: 'Polygon Testnet Mumbai',
-          symbol: 'MATIC',
-          decimals: 18,
-          rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
-          blockExplorerUrl: 'https://mumbai.polygonscan.com'
-        }
-        break
-    }
+    let info = ChainIdToChainInfoMap[chainId]
+    info.chainId = chainIdHex
 
     try {
       await this.provider.request({
@@ -154,101 +148,49 @@ export class Wallets {
     }
     catch (error: any) {
       console.error(error)
-      try {
-        await this.provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
-              chainId: chainIdHex,
-              chainName: info.networkName,
-              nativeCurrency: {
-                name: info.symbol,
-                symbol: info.symbol,
-                decimals: info.decimals
-              },
-              rpcUrls: [info.rpcUrl],
-              blockExplorerUrls: [info.blockExplorerUrl]
-            }
-          ]
-        })
+      if (error.code === ErrorCode.metaMaskUserRejectedTheRequest) {
+        throw error
       }
-      catch (addError) {
-        console.error(addError)
-        throw addError
+      else {
+        try {
+          await this.provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: chainIdHex,
+                chainName: info.networkName,
+                nativeCurrency: {
+                  name: info.symbol,
+                  symbol: info.symbol,
+                  decimals: info.decimals
+                },
+                rpcUrls: [info.rpcUrl],
+                blockExplorerUrls: [info.blockExplorerUrl]
+              }
+            ]
+          })
+        }
+        catch (addError) {
+          console.error(addError)
+          throw addError
+        }
       }
     }
   }
 
-  async torusConnect () {
-    let host = 'mainnet'
-    switch (this.chainId) {
-      case ChainId.eth:
-        host = 'mainnet'
-        break
-      case ChainId.ethGoerli:
-        host = 'goerli'
-        break
-      case ChainId.bsc:
-        host = 'bsc_mainnet'
-        break
-      case ChainId.bscTestnet:
-        host = 'bsc_testnet'
-        break
-      case ChainId.polygon:
-        host = 'matic'
-        break
-      case ChainId.polygonMumbai:
-        host = 'mumbai'
-        break
-    }
-
+  async evmSignData (data: string | object, isEIP712?: boolean): Promise<string> {
     try {
-      if (!this.provider) {
-        await this.provider.init({
-          showTorusButton: true,
-          useLocalStorage: true,
-          network: {
-            host: host
-          }
-        })
-        await this.provider.login()
-      }
-      const net_version = await this.provider.ethereum.request({ method: 'net_version' })
-      const eth_chainId = await this.provider.ethereum.request({ method: 'eth_chainId' })
-      const _chainId = chainIdHexToNumber(net_version || eth_chainId)
-      if (this.chainId && this.chainId !== _chainId) {
-        await this.provider.setProvider({
-          host: host
-        })
-      }
-      const res = await this.provider.ethereum.request({ method: 'eth_requestAccounts' })
-      return res
-    }
-    catch (err) {
-      console.error(err)
-      throw err
-    }
-  }
-
-  async tronLinkConnect (): Promise<string[]> {
-    const account = this.provider.defaultAddress.base58
-    return [account]
-  }
-
-  async evmSignData (provider: any, data: string | object, isEIP712?: boolean): Promise<string> {
-    try {
-      const address = this.addresses[0]
-      let res = ''
+      let res
       if (isEIP712) {
-        res = await provider.request({
+        res = await this.provider.request({
           method: 'eth_signTypedData_v4',
-          params: [address, JSON.stringify(data)]
+          params: [this.address, JSON.stringify(data)]
         })
       }
       else {
-        res = await provider.request({
+        res = await this.provider.request({
           method: 'personal_sign',
-          params: [data, address]
+          params: [data, this.address]
         })
       }
       return res
@@ -259,13 +201,12 @@ export class Wallets {
     }
   }
 
-  async ethSign (provider: any, data: string): Promise<string> {
+  async ethSign (data: string): Promise<string> {
     try {
-      const res = await provider.request({
+      return await this.provider.request({
         method: 'eth_sign',
-        params: [this.addresses[0], data]
+        params: [this.address, data]
       })
-      return res
     }
     catch (err) {
       console.error(err)
@@ -275,8 +216,7 @@ export class Wallets {
 
   async tronLinkSign (data: string | object): Promise<string> {
     try {
-      const res = await this.provider.trx.sign(data)
-      return res
+      return await this.provider.trx.sign(data)
     }
     catch (err) {
       console.error(err)
@@ -284,12 +224,12 @@ export class Wallets {
     }
   }
 
-  async evmSendTrx (provider: any, { to, value, data }: ISendTrxParams): Promise<string> {
-    const _from = this.addresses[0]
+  async evmSendTrx ({ to, value, data }: ISendTrxParams): Promise<string> {
+    const _from = this.address
     const _data = Web3.utils.utf8ToHex(data)
     const _value = Web3.utils.numberToHex(value)
     try {
-      const res = await provider.request({
+      return await this.provider.request({
         method: 'eth_sendTransaction',
         params: [{
           from: _from,
@@ -299,7 +239,6 @@ export class Wallets {
           gas: Web3.utils.numberToHex('25000')
         }]
       })
-      return res
     }
     catch (err) {
       console.error(err)
@@ -308,7 +247,7 @@ export class Wallets {
   }
 
   async tronLinkSendTrx ({ to, value, data }: ISendTrxParams): Promise<string> {
-    const _from = this.addresses[0]
+    const _from = this.address
     try {
       let res = await this.provider.transactionBuilder.sendTrx(to, value, _from)
       res = await this.provider.transactionBuilder.addUpdateData(res, data)
