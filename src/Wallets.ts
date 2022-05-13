@@ -104,11 +104,23 @@ export class Wallets {
 
   async tronLinkConnect(): Promise<IConnectRes> {
     try {
-      const res: ITronLinkRequestAccountsResponse = await this.provider.request({
-        method: 'tron_requestAccounts',
-      })
+      if (this.provider.request) {
+        const res: ITronLinkRequestAccountsResponse = await this.provider.request({
+          method: 'tron_requestAccounts',
+        })
 
-      if (res.code === TronLinkRequestAccountsResponseCode.ok) {
+        if (res.code === TronLinkRequestAccountsResponseCode.ok) {
+          this.address = this.provider.defaultAddress.base58
+          return {
+            coinType: CoinType.trx,
+            chainId: undefined,
+            address: this.address,
+          }
+        }
+        const error: any = new Error(res.message)
+        error.code = res.message
+        throw error
+      } else {
         this.address = this.provider.defaultAddress.base58
         return {
           coinType: CoinType.trx,
@@ -116,9 +128,6 @@ export class Wallets {
           address: this.address,
         }
       }
-      const error: any = new Error(res.message)
-      error.code = res.message
-      throw error
     } catch (err) {
       console.error(err)
       throw err
