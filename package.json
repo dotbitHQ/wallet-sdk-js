@@ -1,6 +1,6 @@
 {
   "name": "wallet-sdk-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "wallets sdk",
   "keywords": [
     "wallet",
@@ -63,7 +63,7 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
-    "tag": "beta",
+    "tag": "latest",
     "access": "public"
   },
   "engines": {
