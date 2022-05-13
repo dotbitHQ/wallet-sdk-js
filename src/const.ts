@@ -3,11 +3,11 @@ export enum WalletProtocol {
   tronLink = 'tronLink',
   torus = 'torus',
   uniSign = 'uniSign',
-  walletConnect = 'walletConnect'
+  walletConnect = 'walletConnect',
 }
 
 export enum ErrorCode {
-  metaMaskUserRejectedTheRequest = 4001
+  metaMaskUserRejectedTheRequest = 4001,
 }
 
 // EVM-based Chains https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -28,7 +28,7 @@ export enum CoinType {
   trx = 195,
   ckb = 309,
   bnb = 714,
-  matic = 966
+  matic = 966,
 }
 
 export const ChainIdToCoinTypeMap: { [key: string]: number } = {
@@ -52,41 +52,41 @@ export const ChainIdToChainInfoMap: { [key: string]: any } = {
     symbol: 'ETH',
     decimals: 18,
     rpcUrl: 'https://mainnet.infura.io/v3/',
-    blockExplorerUrl: 'https://etherscan.io'
+    blockExplorerUrl: 'https://etherscan.io',
   },
   [ChainId.ethGoerli]: {
     networkName: 'Ethereum Goerli Testnet',
     symbol: 'ETH',
     decimals: 18,
     rpcUrl: 'https://goerli.infura.io/v3/',
-    blockExplorerUrl: 'https://goerli.etherscan.io'
+    blockExplorerUrl: 'https://goerli.etherscan.io',
   },
   [ChainId.bsc]: {
     networkName: 'Binance Smart Chain Mainnet',
     symbol: 'BNB',
     decimals: 18,
     rpcUrl: 'https://bsc-dataseed1.binance.org',
-    blockExplorerUrl: 'https://bscscan.com'
+    blockExplorerUrl: 'https://bscscan.com',
   },
   [ChainId.bscTestnet]: {
     networkName: 'Binance Smart Chain Testnet',
     symbol: 'BNB',
     decimals: 18,
     rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-    blockExplorerUrl: 'https://testnet.bscscan.com'
+    blockExplorerUrl: 'https://testnet.bscscan.com',
   },
   [ChainId.polygon]: {
     networkName: 'Polygon Mainnet',
     symbol: 'MATIC',
     decimals: 18,
     rpcUrl: 'https://polygon-rpc.com/',
-    blockExplorerUrl: 'https://polygonscan.com'
+    blockExplorerUrl: 'https://polygonscan.com',
   },
   [ChainId.polygonMumbai]: {
     networkName: 'Polygon Testnet Mumbai',
     symbol: 'MATIC',
     decimals: 18,
     rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
-    blockExplorerUrl: 'https://mumbai.polygonscan.com'
-  }
+    blockExplorerUrl: 'https://mumbai.polygonscan.com',
+  },
 }
