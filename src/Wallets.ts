@@ -1,4 +1,3 @@
-import { utf8ToHex, numberToHex } from 'web3-utils'
 import {
   ChainId,
   ChainIdToChainInfoMap,
@@ -8,7 +7,7 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber } from './tools'
+import { chainIdHexToNumber, utf8ToHex, numberToHex } from './tools'
 import { IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams } from './types'
 
 export class Wallets {
