@@ -1,10 +1,10 @@
-import Web3 from 'web3'
+import { isHexStrict, hexToNumber } from 'web3-utils'
 
 /**
  * Convert a hexadecimal chainId to decimal
  * @param chainId
  */
 export function chainIdHexToNumber(chainId: string | number): number {
-  const _chainId = Web3.utils.isHexStrict(chainId) ? Web3.utils.hexToNumber(chainId) : chainId
+  const _chainId = isHexStrict(chainId) ? hexToNumber(chainId) : chainId
   return Number(_chainId)
 }

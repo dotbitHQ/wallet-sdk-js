@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import { utf8ToHex, numberToHex } from 'web3-utils'
 import {
   ChainId,
   ChainIdToChainInfoMap,
@@ -135,7 +135,7 @@ export class Wallets {
   }
 
   async metaMaskSwitchChain(chainId: number) {
-    const chainIdHex = Web3.utils.numberToHex(chainId)
+    const chainIdHex = numberToHex(chainId)
     const info = ChainIdToChainInfoMap[chainId]
     info.chainId = chainIdHex
 
@@ -222,8 +222,8 @@ export class Wallets {
 
   async evmSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const _from = this.address
-    const _data = Web3.utils.utf8ToHex(data)
-    const _value = Web3.utils.numberToHex(value)
+    const _data = utf8ToHex(data)
+    const _value = numberToHex(value)
     try {
       return await this.provider.request({
         method: 'eth_sendTransaction',
@@ -233,7 +233,7 @@ export class Wallets {
             to,
             value: _value,
             data: _data,
-            gas: Web3.utils.numberToHex('25000'),
+            gas: numberToHex('25000'),
           },
         ],
       })
