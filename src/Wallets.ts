@@ -83,7 +83,6 @@ export class Wallets {
   }
 
   async torusConnect(): Promise<IConnectRes> {
-    debugger
     try {
       const net_version = await this.provider.request({ method: 'net_version' })
       const eth_chainId = await this.provider.request({ method: 'eth_chainId' })
@@ -117,7 +116,7 @@ export class Wallets {
           }
         }
         const error: any = new Error(res.message)
-        error.code = res.message
+        error.code = res.code
         throw error
       } else {
         this.address = this.provider.defaultAddress.base58
