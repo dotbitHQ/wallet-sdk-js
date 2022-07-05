@@ -6,8 +6,8 @@ support MetaMask、Torus、TronLink
 
 ```bash
 # install dependencies
-$ npm install
+$ yarn install
 
 # build
-$ npm run build
+$ yarn run build
 ```
