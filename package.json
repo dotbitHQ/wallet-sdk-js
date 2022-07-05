@@ -1,6 +1,6 @@
 {
   "name": "wallet-sdk-js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "wallets sdk",
   "keywords": [
     "wallet",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "bn.js": "^5.2.0",
+    "number-to-bn": "^1.7.0",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
