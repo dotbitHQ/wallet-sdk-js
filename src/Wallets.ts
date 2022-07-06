@@ -211,7 +211,8 @@ export class Wallets {
 
   async tronLinkSign(data: string | any): Promise<string> {
     try {
-      return await this.provider.trx.sign(data)
+      const res = await this.provider.trx.sign(data)
+      return res.txid
     } catch (err) {
       console.error(err)
       throw err
@@ -248,7 +249,7 @@ export class Wallets {
       res = await this.provider.transactionBuilder.addUpdateData(res, data)
       res = await this.provider.trx.sign(res)
       res = await this.provider.trx.sendRawTransaction(res)
-      return res
+      return res.txid
     } catch (err) {
       console.error(err)
       throw err
