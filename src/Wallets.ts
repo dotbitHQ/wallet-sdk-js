@@ -212,7 +212,7 @@ export class Wallets {
   async tronLinkSign(data: string | any): Promise<string> {
     try {
       const res = await this.provider.trx.sign(data)
-      return res.txid
+      return res
     } catch (err) {
       console.error(err)
       throw err
