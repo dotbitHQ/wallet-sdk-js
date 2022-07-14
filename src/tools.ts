@@ -1,6 +1,6 @@
+import BN from 'bn.js'
 // @ts-ignore
 import numberToBN from 'number-to-bn'
-import BN from 'bn.js'
 import utf8 from 'utf8'
 
 /**
@@ -10,8 +10,8 @@ import utf8 from 'utf8'
  * @param {String} hex to be checked
  * @returns {Boolean}
  */
-export function isHexStrict(hex: string | number) {
-  return (typeof hex === 'string' || typeof hex === 'number') && /^(-)?0x[0-9a-f]*$/i.test(String(hex))
+export function isHexStrict(hex: string | number): boolean {
+  return /^(-)?0x[0-9a-f]*$/i.test(String(hex))
 }
 
 /**
@@ -23,8 +23,7 @@ export function isHexStrict(hex: string | number) {
  */
 export function toBN(number: number | string): BN {
   try {
-    // eslint-disable-next-line
-    return numberToBN.apply(null, arguments)
+    return numberToBN(number)
   } catch (e) {
     throw new Error(e + ' Given value: "' + number + '"')
   }
@@ -38,14 +37,9 @@ export function toBN(number: number | string): BN {
  * @return {String}
  */
 export function hexToNumber(value: string | number): string | number {
-  if (!value) {
-    return value
-  }
-
   if (typeof value === 'string' && !isHexStrict(value)) {
     throw new Error('Given value "' + value + '" is not a valid hex string.')
   }
-
   return toBN(value).toNumber()
 }
 
@@ -57,10 +51,6 @@ export function hexToNumber(value: string | number): string | number {
  * @return {String}
  */
 export function numberToHex(value: number | string): string {
-  if (value === null || value === undefined) {
-    return value
-  }
-
   if (!isFinite(Number(value)) && !isHexStrict(value)) {
     throw new Error('Given input "' + value + '" is not a number.')
   }
@@ -90,10 +80,8 @@ export function utf8ToHex(str: string): string {
 
   for (let i = 0; i < str.length; i++) {
     const code = str.charCodeAt(i)
-    // if (code !== 0) {
     const n = code.toString(16)
     hex += n.length < 2 ? '0' + n : n
-    // }
   }
 
   return '0x' + hex

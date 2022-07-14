@@ -34,5 +34,4 @@ export default {
       browser: true,
     }),
   ],
-  external: ['web3']
 }

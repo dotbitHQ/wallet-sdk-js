@@ -7,7 +7,7 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber, utf8ToHex, numberToHex } from './tools'
+import { chainIdHexToNumber, numberToHex, utf8ToHex } from './tools'
 import { IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams } from './types'
 
 export class Wallets {
