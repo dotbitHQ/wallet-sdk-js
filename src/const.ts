@@ -22,20 +22,20 @@ export enum ChainId {
 
 // SLIP-0044 : Registered coin types for BIP-0044 https://github.com/ethereum-lists/chains
 export enum CoinType {
-  btc = 0,
-  doge = 3,
-  eth = 60,
-  trx = 195,
-  ckb = 309,
-  bnb = 714,
-  matic = 966,
+  btc = '0',
+  doge = '3',
+  eth = '60',
+  trx = '195',
+  ckb = '309',
+  bsc = '9006',
+  matic = '966',
 }
 
-export const ChainIdToCoinTypeMap: { [key: string]: number } = {
+export const ChainIdToCoinTypeMap: { [key: string]: CoinType } = {
   [ChainId.eth]: CoinType.eth,
   [ChainId.ethGoerli]: CoinType.eth,
-  [ChainId.bsc]: CoinType.bnb,
-  [ChainId.bscTestnet]: CoinType.bnb,
+  [ChainId.bsc]: CoinType.bsc,
+  [ChainId.bscTestnet]: CoinType.bsc,
   [ChainId.polygon]: CoinType.matic,
   [ChainId.polygonMumbai]: CoinType.matic,
 }
