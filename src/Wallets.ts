@@ -7,7 +7,7 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber, numberToHex, utf8ToHex } from './tools'
+import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex } from './tools'
 import { IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams } from './types'
 
 export class Wallets {
@@ -185,9 +185,13 @@ export class Wallets {
           params: [this.address, JSON.stringify(data)],
         })
       } else {
+        let _data = data
+        if (isHexStrict('0x' + data)) {
+          _data = '0x' + data
+        }
         res = await this.provider.request({
           method: 'personal_sign',
-          params: [data, this.address],
+          params: [_data, this.address],
         })
       }
       return res
