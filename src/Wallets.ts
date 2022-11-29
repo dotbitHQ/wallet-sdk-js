@@ -66,8 +66,8 @@ export class Wallets {
 
   async metaMaskConnect(): Promise<IConnectRes> {
     try {
-      const net_version = await this.provider.request({ method: 'net_version' })
-      const eth_chainId = await this.provider.request({ method: 'eth_chainId' })
+      const net_version = this.provider.networkVersion
+      const eth_chainId = this.provider.chainId
       const _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
       this.address = res[0]
@@ -84,8 +84,8 @@ export class Wallets {
 
   async torusConnect(): Promise<IConnectRes> {
     try {
-      const net_version = await this.provider.request({ method: 'net_version' })
-      const eth_chainId = await this.provider.request({ method: 'eth_chainId' })
+      const net_version = this.provider.networkVersion
+      const eth_chainId = this.provider.chainId
       const _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
       this.address = res[0]
