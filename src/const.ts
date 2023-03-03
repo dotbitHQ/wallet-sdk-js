@@ -2,6 +2,7 @@ export enum WalletProtocol {
   metaMask = 'metaMask',
   tronLink = 'tronLink',
   torus = 'torus',
+  tokenPocketUTXO = 'tokenPocketUTXO',
   uniSign = 'uniSign',
   walletConnect = 'walletConnect',
 }

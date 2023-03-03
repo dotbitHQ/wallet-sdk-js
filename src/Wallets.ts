@@ -8,7 +8,14 @@ import {
   WalletProtocol,
 } from './const'
 import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex } from './tools'
-import { IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams } from './types'
+import {
+  IConnectRes,
+  ISendTrxParams,
+  ITronLinkRequestAccountsResponse,
+  IWalletsParams,
+} from './types'
+
+declare const window: any
 
 export class Wallets {
   provider: any
@@ -32,6 +39,8 @@ export class Wallets {
       res = await this.torusConnect()
     } else if (this.walletProtocol === WalletProtocol.tronLink) {
       res = await this.tronLinkConnect()
+    } else if (this.walletProtocol === WalletProtocol.tokenPocketUTXO) {
+      res = await this.tokenPocketDogeCoinConnect()
     }
     return res
   }
@@ -46,6 +55,9 @@ export class Wallets {
       case WalletProtocol.tronLink:
         res = await this.tronLinkSign(data)
         break
+      case WalletProtocol.tokenPocketUTXO:
+        res = await this.tokenPocketUTXOSign(data)
+        break
     }
     return res
   }
@@ -59,6 +71,9 @@ export class Wallets {
         break
       case WalletProtocol.tronLink:
         txhash = await this.tronLinkSendTrx(data)
+        break
+      case WalletProtocol.tokenPocketUTXO:
+        txhash = await this.tokenPocketUTXOSendTrx(data)
         break
     }
     return txhash
@@ -132,6 +147,26 @@ export class Wallets {
     }
   }
 
+  async tokenPocketDogeCoinConnect(): Promise<IConnectRes> {
+    try {
+      const res = await this.provider.request({
+        method: 'btc_accounts',
+      })
+      const _chainId = await this.provider.request({
+        method: 'btc_chainId',
+      })
+      this.address = res[0]
+      return {
+        coinType: CoinType.doge,
+        chainId: _chainId,
+        address: this.address,
+      }
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
   async metaMaskSwitchChain(chainId: number) {
     const chainIdHex = numberToHex(chainId)
     const info = ChainIdToChainInfoMap[chainId]
@@ -194,6 +229,7 @@ export class Wallets {
           params: [_data, this.address],
         })
       }
+      debugger
       return res
     } catch (err) {
       console.error(err)
@@ -223,6 +259,19 @@ export class Wallets {
     }
   }
 
+  async tokenPocketUTXOSign(data: string | any): Promise<string> {
+    try {
+      const res = await this.provider.request({
+        method: 'btc_signMessage',
+        params: [data, this.address],
+      })
+      return res
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
   async evmSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const _from = this.address
     const _data = utf8ToHex(data)
@@ -245,7 +294,6 @@ export class Wallets {
       throw err
     }
   }
-
   async tronLinkSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const _from = this.address
     try {
@@ -254,6 +302,63 @@ export class Wallets {
       res = await this.provider.trx.sign(res)
       res = await this.provider.trx.sendRawTransaction(res)
       return res.txid
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+  // https://github.com/TP-Lab/tp-js-sdk/blob/master/src/tp.js#LL924C16-L924C16
+  async tokenPocketUTXOSendTrx({ to, value }: ISendTrxParams): Promise<string> {
+    const from = this.address
+    const params = { from, to, amount: value }
+    try {
+      if (!params.from || !params.to || !params.amount) {
+        throw new Error('missing params; "from", "to", "amount" is required ');
+      }
+
+      return new Promise(function (resolve, reject) {
+        const random = parseInt(Math.random() * 100000 + '')
+        const tpCallbackFun = 'tp_callback_' + new Date().getTime() + random
+
+        window[tpCallbackFun] = function (result: any) {
+          result = result.replace(/\r/gi, '').replace(/\n/gi, '')
+          try {
+            const res = JSON.parse(result)
+            if (res.result) {
+              resolve(res.data)
+            } else {
+              reject(res.message)
+            }
+          } catch (e) {
+            reject(e)
+          }
+        }
+
+        if (window.TPJSBrigeClient) {
+          window.TPJSBrigeClient.callMessage('btcTokenTransfer', JSON.stringify(params), tpCallbackFun)
+        }
+        // ios
+        if (window.webkit) {
+          window.webkit.messageHandlers['btcTokenTransfer'].postMessage({
+            body: {
+              params: JSON.stringify(params),
+              callback: tpCallbackFun,
+            },
+          })
+        }
+      })
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
+  async request({ method, params }: { method: string; params?: any }): Promise<any> {
+    try {
+      return await this.provider.request({
+        method: method,
+        params: params,
+      })
     } catch (err) {
       console.error(err)
       throw err
