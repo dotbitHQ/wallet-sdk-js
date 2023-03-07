@@ -1,4 +1,9 @@
-import { ChainId, CoinType, TronLinkRequestAccountsResponseCode, WalletProtocol } from '../const'
+import {
+  ChainId,
+  CoinType,
+  TronLinkRequestAccountsResponseCode,
+  WalletProtocol,
+} from '../const'
 
 export interface IWalletsParams {
   provider: any

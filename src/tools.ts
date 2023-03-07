@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+import { Keccak } from 'sha3'
 // @ts-ignore
 import numberToBN from 'number-to-bn'
 import utf8 from 'utf8'
@@ -94,4 +95,33 @@ export function utf8ToHex(str: string): string {
 export function chainIdHexToNumber(chainId: string | number): number {
   const _chainId = isHexStrict(chainId) ? hexToNumber(chainId) : chainId
   return Number(_chainId)
+}
+
+/**
+ * Converts to a checksum address
+ *
+ * @method toChecksumAddress
+ * @param {String} address the given HEX address
+ * @return {String}
+ */
+export function toChecksumAddress(address: string): string {
+  if (typeof address === 'undefined') return ''
+
+  if(!/^(0x)?[0-9a-f]{40}$/i.test(address))
+    throw new Error(`Given address "${address}" is not a valid Ethereum address.`)
+
+  address = address.toLowerCase().replace(/^0x/i, '')
+  const hash = new Keccak(256).update(address).digest('hex')
+  const addressHash = hash.replace(/^0x/i, '')
+  let checksumAddress = '0x'
+
+  for (let i = 0; i < address.length; i++) {
+    // If ith character is 8 to f then make it uppercase
+    if (parseInt(addressHash[i], 16) > 7) {
+      checksumAddress += address[i].toUpperCase()
+    } else {
+      checksumAddress += address[i]
+    }
+  }
+  return checksumAddress
 }
