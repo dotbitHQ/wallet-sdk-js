@@ -40,7 +40,7 @@ export class Wallets {
     } else if (this.walletProtocol === WalletProtocol.tronLink) {
       res = await this.tronLinkConnect()
     } else if (this.walletProtocol === WalletProtocol.tokenPocketUTXO) {
-      res = await this.tokenPocketDogeCoinConnect()
+      res = await this.tokenPocketUTXOConnect()
     }
     return res
   }
@@ -103,7 +103,7 @@ export class Wallets {
       const eth_chainId = this.provider.chainId
       const _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
-      this.address = res[0]
+      this.address = toChecksumAddress(res[0])
       return {
         coinType: ChainIdToCoinTypeMap[_chainId],
         chainId: _chainId,
@@ -147,7 +147,7 @@ export class Wallets {
     }
   }
 
-  async tokenPocketDogeCoinConnect(): Promise<IConnectRes> {
+  async tokenPocketUTXOConnect(): Promise<IConnectRes> {
     try {
       const res = await this.provider.request({
         method: 'btc_accounts',
@@ -345,18 +345,6 @@ export class Wallets {
             },
           })
         }
-      })
-    } catch (err) {
-      console.error(err)
-      throw err
-    }
-  }
-
-  async request({ method, params }: { method: string; params?: any }): Promise<any> {
-    try {
-      return await this.provider.request({
-        method: method,
-        params: params,
       })
     } catch (err) {
       console.error(err)
