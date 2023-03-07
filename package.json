@@ -41,6 +41,7 @@
   "dependencies": {
     "bn.js": "^5.2.0",
     "number-to-bn": "^1.7.0",
+    "sha3": "^2.1.4",
     "utf8": "^3.0.0"
   },
   "devDependencies": {

@@ -7,7 +7,7 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex } from './tools'
+import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex, toChecksumAddress } from './tools'
 import {
   IConnectRes,
   ISendTrxParams,
@@ -85,7 +85,7 @@ export class Wallets {
       const eth_chainId = this.provider.chainId
       const _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
-      this.address = res[0]
+      this.address = toChecksumAddress(res[0])
       return {
         coinType: ChainIdToCoinTypeMap[_chainId],
         chainId: _chainId,
