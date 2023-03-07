@@ -229,7 +229,6 @@ export class Wallets {
           params: [_data, this.address],
         })
       }
-      debugger
       return res
     } catch (err) {
       console.error(err)
