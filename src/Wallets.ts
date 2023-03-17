@@ -307,9 +307,10 @@ export class Wallets {
     }
   }
   // https://github.com/TP-Lab/tp-js-sdk/blob/master/src/tp.js#LL924C16-L924C16
-  async tokenPocketUTXOSendTrx({ to, value }: ISendTrxParams): Promise<string> {
+  async tokenPocketUTXOSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const from = this.address
-    const params = { from, to, amount: value }
+    const op_return = data
+    const params = { from, to, amount: value, op_return }
     try {
       if (!params.from || !params.to || !params.amount) {
         throw new Error('missing params; "from", "to", "amount" is required ');
