@@ -3,6 +3,7 @@ import { Keccak } from 'sha3'
 // @ts-ignore
 import numberToBN from 'number-to-bn'
 import utf8 from 'utf8'
+import Decimal from 'decimal.js';
 
 /**
  * Check if string is HEX, requires a 0x in front
@@ -124,4 +125,13 @@ export function toChecksumAddress(address: string): string {
     }
   }
   return checksumAddress
+}
+
+/**
+ * Converts value to it's decimal representation in string
+ * @param value The value to convert
+ * @returns The decimal representation of the given value
+ */
+export function toDecimal(value: string | number): Decimal {
+  return new Decimal(value)
 }

@@ -7,7 +7,7 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex, toChecksumAddress } from './tools'
+import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex, toChecksumAddress, toDecimal } from './tools'
 import {
   IConnectRes,
   ISendTrxParams,
@@ -293,6 +293,7 @@ export class Wallets {
       throw err
     }
   }
+
   async tronLinkSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const _from = this.address
     try {
@@ -306,20 +307,27 @@ export class Wallets {
       throw err
     }
   }
+
   // https://github.com/TP-Lab/tp-js-sdk/blob/master/src/tp.js#LL924C16-L924C16
-  async tokenPocketUTXOSendTrx({ to, value }: ISendTrxParams): Promise<string> {
+  async tokenPocketUTXOSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const from = this.address
-    const params = { from, to, amount: value }
+    const op_return = data
+    const params = { from, to, amount: value, op_return }
     try {
       if (!params.from || !params.to || !params.amount) {
         throw new Error('missing params; "from", "to", "amount" is required ');
       }
 
-      return new Promise(function (resolve, reject) {
+      const balance = await this.getTPUTXOCurrentBalance()
+      if (toDecimal(balance.data?.balance || 0).lte(params.amount)) {
+        throw new Error('insufficient funds for transfer')
+      }
+
+      return new Promise((resolve, reject) => {
         const random = parseInt(Math.random() * 100000 + '')
         const tpCallbackFun = 'tp_callback_' + new Date().getTime() + random
 
-        window[tpCallbackFun] = function (result: any) {
+        window[tpCallbackFun] = function(result: any) {
           result = result.replace(/\r/gi, '').replace(/\n/gi, '')
           try {
             const res = JSON.parse(result)
@@ -332,23 +340,45 @@ export class Wallets {
             reject(e)
           }
         }
-
-        if (window.TPJSBrigeClient) {
-          window.TPJSBrigeClient.callMessage('btcTokenTransfer', JSON.stringify(params), tpCallbackFun)
-        }
-        // ios
-        if (window.webkit) {
-          window.webkit.messageHandlers['btcTokenTransfer'].postMessage({
-            body: {
-              params: JSON.stringify(params),
-              callback: tpCallbackFun,
-            },
-          })
-        }
+        this.sendTokenPocketRequest('btcTokenTransfer', JSON.stringify(params), tpCallbackFun)
       })
     } catch (err) {
       console.error(err)
       throw err
+    }
+  }
+
+  async getTPUTXOCurrentBalance(): Promise<Record<string, any>> {
+    return new Promise((resolve, reject) => {
+      const random = parseInt(Math.random() * 100000 + '')
+      const tpCallbackFun = 'tp_callback_' + new Date().getTime() + random
+
+      window[tpCallbackFun] = function(result: any) {
+        result = result.replace(/\r/gi, '').replace(/\n/gi, '')
+        try {
+          const res = JSON.parse(result)
+          resolve(res)
+        } catch (e) {
+          reject(e)
+        }
+      }
+
+      this.sendTokenPocketRequest('getCurrentBalance', '', tpCallbackFun)
+    })
+  }
+
+  sendTokenPocketRequest(methodName: string, params: any, callback?: string) {
+    if (window.TPJSBrigeClient) {
+      window.TPJSBrigeClient.callMessage(methodName, params, callback)
+    }
+    // ios
+    if (window.webkit) {
+      window.webkit.messageHandlers[methodName].postMessage({
+        body: {
+          params: params,
+          callback: callback,
+        },
+      })
     }
   }
 }
