@@ -7,13 +7,8 @@ import {
   TronLinkRequestAccountsResponseCode,
   WalletProtocol,
 } from './const'
-import { chainIdHexToNumber, isHexStrict, numberToHex, utf8ToHex, toChecksumAddress, toDecimal } from './tools'
-import {
-  IConnectRes,
-  ISendTrxParams,
-  ITronLinkRequestAccountsResponse,
-  IWalletsParams,
-} from './types'
+import { chainIdHexToNumber, isHexStrict, numberToHex, toChecksumAddress, toDecimal, utf8ToHex } from './tools'
+import { IConnectRes, ISendTrxParams, ITronLinkRequestAccountsResponse, IWalletsParams } from './types'
 
 declare const window: any
 
@@ -53,7 +48,7 @@ export class Wallets {
         res = await this.evmSignData(data, isEIP712)
         break
       case WalletProtocol.tronLink:
-        res = await this.tronLinkSign(data)
+        res = await this.tronLinkSignMessageV2(data)
         break
       case WalletProtocol.tokenPocketUTXO:
         res = await this.tokenPocketUTXOSign(data)
@@ -258,6 +253,16 @@ export class Wallets {
     }
   }
 
+  async tronLinkSignMessageV2(data: string | any): Promise<string> {
+    try {
+      const res = await this.provider.trx.signMessageV2(data)
+      return res
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
+  }
+
   async tokenPocketUTXOSign(data: string | any): Promise<string> {
     try {
       const res = await this.provider.request({
@@ -315,7 +320,7 @@ export class Wallets {
     const params = { from, to, amount: value, op_return }
     try {
       if (!params.from || !params.to || !params.amount) {
-        throw new Error('missing params; "from", "to", "amount" is required ');
+        throw new Error('missing params; "from", "to", "amount" is required ')
       }
 
       const balance = await this.getTPUTXOCurrentBalance()
@@ -327,7 +332,7 @@ export class Wallets {
         const random = parseInt(Math.random() * 100000 + '')
         const tpCallbackFun = 'tp_callback_' + new Date().getTime() + random
 
-        window[tpCallbackFun] = function(result: any) {
+        window[tpCallbackFun] = function (result: any) {
           result = result.replace(/\r/gi, '').replace(/\n/gi, '')
           try {
             const res = JSON.parse(result)
@@ -353,7 +358,7 @@ export class Wallets {
       const random = parseInt(Math.random() * 100000 + '')
       const tpCallbackFun = 'tp_callback_' + new Date().getTime() + random
 
-      window[tpCallbackFun] = function(result: any) {
+      window[tpCallbackFun] = function (result: any) {
         result = result.replace(/\r/gi, '').replace(/\n/gi, '')
         try {
           const res = JSON.parse(result)
