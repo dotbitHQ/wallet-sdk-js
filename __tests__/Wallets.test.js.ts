@@ -10,11 +10,11 @@ const Address = '0x553260D04A3aA8354f727935F63225FA48D928fD'
 
 describe('#constructor', () => {
   it('a correct Wallet instance', () => {
-    const etherWallet = new ethers.Wallet(PrivateKey, ethers.getDefaultProvider('goerli'))
+    const etherWallet = new ethers.Wallet(PrivateKey, ethers.getDefaultProvider('holesky'))
     const wallet = new Wallets({
       provider: etherWallet.provider,
       coinType: CoinType.eth,
-      chainId: ChainId.ethGoerli,
+      chainId: ChainId.ethHolesky,
       walletProtocol: WalletProtocol.metaMask,
     })
     expect(etherWallet.address).toBe(Address)

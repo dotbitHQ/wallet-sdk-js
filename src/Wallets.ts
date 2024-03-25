@@ -94,8 +94,8 @@ export class Wallets {
 
   async torusConnect(): Promise<IConnectRes> {
     try {
-      const net_version = this.provider.networkVersion
-      const eth_chainId = this.provider.chainId
+      const net_version = await this.provider.request({ method: 'net_version' })
+      const eth_chainId = await this.provider.request({ method: 'eth_chainId' })
       const _chainId = chainIdHexToNumber(net_version || eth_chainId)
       const res = await this.provider.request({ method: 'eth_requestAccounts' })
       this.address = toChecksumAddress(res[0])
@@ -278,7 +278,11 @@ export class Wallets {
 
   async evmSendTrx({ to, value, data }: ISendTrxParams): Promise<string> {
     const _from = this.address
-    const _data = utf8ToHex(data)
+
+    let _data = ''
+    if (data) {
+      _data = utf8ToHex(data)
+    }
     const _value = numberToHex(value)
     try {
       return await this.provider.request({
@@ -289,7 +293,6 @@ export class Wallets {
             to,
             value: _value,
             data: _data,
-            gas: numberToHex('25000'),
           },
         ],
       })

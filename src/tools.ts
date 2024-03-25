@@ -3,7 +3,7 @@ import { Keccak } from 'sha3'
 // @ts-ignore
 import numberToBN from 'number-to-bn'
 import utf8 from 'utf8'
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js'
 
 /**
  * Check if string is HEX, requires a 0x in front
@@ -108,7 +108,7 @@ export function chainIdHexToNumber(chainId: string | number): number {
 export function toChecksumAddress(address: string): string {
   if (typeof address === 'undefined') return ''
 
-  if(!/^(0x)?[0-9a-f]{40}$/i.test(address))
+  if (!/^(0x)?[0-9a-f]{40}$/i.test(address))
     throw new Error(`Given address "${address}" is not a valid Ethereum address.`)
 
   address = address.toLowerCase().replace(/^0x/i, '')

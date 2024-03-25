@@ -14,7 +14,7 @@ export enum ErrorCode {
 // EVM-based Chains https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 export enum ChainId {
   eth = 1,
-  ethGoerli = 5,
+  ethHolesky = 17000,
   bsc = 56,
   bscTestnet = 97,
   polygon = 137,
@@ -34,7 +34,7 @@ export enum CoinType {
 
 export const ChainIdToCoinTypeMap: { [key: string]: CoinType } = {
   [ChainId.eth]: CoinType.eth,
-  [ChainId.ethGoerli]: CoinType.eth,
+  [ChainId.ethHolesky]: CoinType.eth,
   [ChainId.bsc]: CoinType.bsc,
   [ChainId.bscTestnet]: CoinType.bsc,
   [ChainId.polygon]: CoinType.matic,
@@ -55,12 +55,12 @@ export const ChainIdToChainInfoMap: { [key: string]: any } = {
     rpcUrl: 'https://mainnet.infura.io/v3/',
     blockExplorerUrl: 'https://etherscan.io',
   },
-  [ChainId.ethGoerli]: {
-    networkName: 'Ethereum Goerli Testnet',
+  [ChainId.ethHolesky]: {
+    networkName: 'Ethereum Holesky Testnet',
     symbol: 'ETH',
     decimals: 18,
-    rpcUrl: 'https://goerli.infura.io/v3/',
-    blockExplorerUrl: 'https://goerli.etherscan.io',
+    rpcUrl: 'https://rpc.ankr.com/eth_holesky/',
+    blockExplorerUrl: 'https://holesky.etherscan.io',
   },
   [ChainId.bsc]: {
     networkName: 'Binance Smart Chain Mainnet',
